@@ -50,8 +50,8 @@ async function create() {
   ws.mergeCells('A2:E2');
   sc(ws.getCell('A2'),{f:fSub,a:ac}); ws.getCell('A2').value='Contrato de Afianzamiento — Póliza Paraguas';
   ws.mergeCells('G2:I2');
-  sc(ws.getCell('G2'),{f:{name:'Calibri',size:9,italic:true,color:{argb:C.gd}},a:ar});
-  ws.getCell('G2').value={formula:'TEXT(TODAY(),"\"Fecha simulación: \"DD/MM/YYYY")'};
+  sc(ws.getCell('G2'),{f:{name:'Calibri',size:9,italic:true,color:{argb:C.gd}},a:ar,n:'"Fecha simulación: "DD/MM/YYYY'});
+  ws.getCell('G2').value=new Date();
   ws.getRow(2).height=22;
 
   // === ROW 3: GLOBAL LIMIT + DISPONIBLE GLOBAL ===
@@ -105,8 +105,7 @@ async function create() {
   // === ROW 12: TOTAL ROW ===
   const tr=ws.getRow(tR); tr.height=28;
   sc(tr.getCell(1),{f:fBW,fl:fs(C.td),a:ac,b:bm}); tr.getCell(1).value='TOTAL PMM';
-  sc(tr.getCell(2),{f:fBW,fl:fs(C.td),a:ac,b:bm,n:nE});
-  tr.getCell(2).value={formula:`SUM(B${fR7}:B${lR})`};
+  sc(tr.getCell(2),{f:fBW,fl:fs(C.td),a:ac,b:bm});
   comps.forEach((_,ci)=>{
     const c=fC+ci,l=cl(c);
     sc(tr.getCell(c),{f:fBW,fl:fs(C.td),a:ac,b:bm,n:nE});
@@ -122,23 +121,28 @@ async function create() {
   sc(tr.getCell(iC),{f:fBW,fl:fs(C.td),a:ac,b:bm,n:nP});
   tr.getCell(iC).value={formula:`IF(NOT(ISNUMBER(G${tR})),"—",IF($C$3=0,0,${ALLSUM}/$C$3))`};
 
-  // === CONDITIONAL FORMATTING ===
-  // G: ERROR text → red
+  // C12:F12: red when company total exceeds global limit
+  ws.addConditionalFormatting({ref:`C${tR}:F${tR}`,rules:[
+    {type:'expression',formulae:[`C${tR}>$C$3`],style:{fill:fs(C.rl),font:{name:'Calibri',size:10,bold:true,color:{argb:C.red}}},priority:20}
+  ]});
+
+  // === CONDITIONAL FORMATTING (expression-based to avoid false positives) ===
+  // G7:G12: red when cell is text "ERROR" (not a number)
   ws.addConditionalFormatting({ref:`G${fR7}:G${tR}`,rules:[
-    {type:'containsText',operator:'containsText',text:'ERROR',style:{fill:fs(C.rl),font:fR},priority:1}
+    {type:'expression',formulae:[`NOT(ISNUMBER(G${fR7}))`],style:{fill:fs(C.rl),font:fR},priority:1}
   ]});
-  // H: =0 → red
+  // H7:H12: red when 0 AND the corresponding G cell is ERROR
   ws.addConditionalFormatting({ref:`H${fR7}:H${tR}`,rules:[
-    {type:'cellIs',operator:'equal',formulae:[0],style:{fill:fs(C.rl),font:fR},priority:2}
+    {type:'expression',formulae:[`AND(H${fR7}=0,NOT(ISNUMBER(G${fR7})))`],style:{fill:fs(C.rl),font:fR},priority:2}
   ]});
-  // I: >100% red, >80% amber
+  // I7:I11: >100% red, >80% amber (only when cell is numeric)
   ws.addConditionalFormatting({ref:`I${fR7}:I${lR}`,rules:[
-    {type:'cellIs',operator:'greaterThan',formulae:[1],style:{fill:fs(C.rl),font:fR},priority:3},
-    {type:'cellIs',operator:'greaterThan',formulae:[0.8],style:{fill:fs('FFF3E0'),font:{color:{argb:C.amb},bold:true}},priority:4}
+    {type:'expression',formulae:[`AND(ISNUMBER(I${fR7}),I${fR7}>1)`],style:{fill:fs(C.rl),font:fR},priority:3},
+    {type:'expression',formulae:[`AND(ISNUMBER(I${fR7}),I${fR7}>0.8)`],style:{fill:fs('FFF3E0'),font:{color:{argb:C.amb},bold:true}},priority:4}
   ]});
-  // G3:H3 disponible global =0 → red
+  // G3:H3 disponible global <=0 → red (only when numeric)
   ws.addConditionalFormatting({ref:'G3:H3',rules:[
-    {type:'cellIs',operator:'lessThanOrEqual',formulae:[0],style:{fill:fs(C.rl),font:fR},priority:5}
+    {type:'expression',formulae:['AND(ISNUMBER(G3),G3<=0)'],style:{fill:fs(C.rl),font:fR},priority:5}
   ]});
 
   // === ROW 14: INDICADORES GLOBALES ===
@@ -165,11 +169,13 @@ async function create() {
   sc(ws.getCell('B18'),{f:fB,a:ac,b:bt,n:nE,fl:fs(C.gl)}); ws.getCell('B18').value={formula:`IF(NOT(ISNUMBER(B17)),0,MAX(0,$C$3-${ALLSUM}))`};
   sc(ws.getCell('C18'),{f:fB,a:ac,b:bt,n:nP,fl:fs(C.gl)}); ws.getCell('C18').value={formula:'IF($C$3=0,0,B18/$C$3)'};
   sc(ws.getCell('D18'),{f:fB,a:ac,b:bt,fl:fs(C.gl)}); ws.getCell('D18').value={formula:'IF(B18=0,"⚠ SIN DISPONIBLE","✓ DISPONIBLE")'};
-  // Conditional: B17 ERROR → red, B18 =0 → red
-  ws.addConditionalFormatting({ref:'B17',rules:[{type:'containsText',operator:'containsText',text:'ERROR',style:{fill:fs(C.rl),font:fR},priority:6}]});
-  ws.addConditionalFormatting({ref:'B18',rules:[{type:'cellIs',operator:'equal',formulae:[0],style:{fill:fs(C.rl),font:fR},priority:7}]});
-  ws.addConditionalFormatting({ref:'D17:D18',rules:[{type:'containsText',operator:'containsText',text:'EXCEDIDO',style:{fill:fs(C.rl),font:fR},priority:8},
-    {type:'containsText',operator:'containsText',text:'SIN DISPONIBLE',style:{fill:fs(C.rl),font:fR},priority:9}]});
+  // Conditional: B17 ERROR → red (expression-based)
+  ws.addConditionalFormatting({ref:'B17',rules:[{type:'expression',formulae:['NOT(ISNUMBER(B17))'],style:{fill:fs(C.rl),font:fR},priority:6}]});
+  // B18 =0 only when B17 is ERROR
+  ws.addConditionalFormatting({ref:'B18',rules:[{type:'expression',formulae:['AND(B18=0,NOT(ISNUMBER(B17)))'],style:{fill:fs(C.rl),font:fR},priority:7}]});
+  // D17:D18 estado → red only when actual error condition is true
+  ws.addConditionalFormatting({ref:'D17',rules:[{type:'expression',formulae:[`${ALLSUM}>$C$3`],style:{fill:fs(C.rl),font:fR},priority:8}]});
+  ws.addConditionalFormatting({ref:'D18',rules:[{type:'expression',formulae:[`AND(MAX(0,$C$3-${ALLSUM})=0,${ALLSUM}>$C$3)`],style:{fill:fs(C.rl),font:fR},priority:9}]});
 
   // === ROW 20: INDICADORES POR PRODUCTO ===
   ws.mergeCells('A20:I20');
@@ -198,31 +204,20 @@ async function create() {
     // I: Margen Global
     sc(row.getCell(9),{f:fN,a:ac,b:bt,n:nE,fl:fs(bg)}); row.getCell(9).value={formula:`MAX(0,$C$3-${ALLSUM})`};
   });
-  // Cond fmt for indicators per product
-  ws.addConditionalFormatting({ref:'D22:D26',rules:[{type:'cellIs',operator:'equal',formulae:[0],style:{fill:fs(C.rl),font:fR},priority:10}]});
-  ws.addConditionalFormatting({ref:'G22:H26',rules:[{type:'containsText',operator:'containsText',text:'EXCEDIDO',style:{fill:fs(C.rl),font:fR},priority:11}]});
+  // Cond fmt for indicators per product (expression-based)
+  // D22:D26 disponible = 0 only when there is an actual error (G col in matrix is ERROR)
+  ws.addConditionalFormatting({ref:'D22:D26',rules:[{type:'expression',formulae:[`AND(D22=0,NOT(ISNUMBER(G${fR7})))`],style:{fill:fs(C.rl),font:fR},priority:10}]});
+  // G22:G26 Estado Sublímite → red only when dispuesto > sublímite (check actual condition)
+  ws.addConditionalFormatting({ref:'G22:G26',rules:[{type:'expression',formulae:['C22>B22'],style:{fill:fs(C.rl),font:fR},priority:11}]});
+  // H22:H26 Estado Global → red only when global total > limit
+  ws.addConditionalFormatting({ref:'H22:H26',rules:[{type:'expression',formulae:[`${ALLSUM}>$C$3`],style:{fill:fs(C.rl),font:fR},priority:12}]});
+  // E22:E26 % Sublímite: >100% red, >80% amber
   ws.addConditionalFormatting({ref:'E22:E26',rules:[
-    {type:'cellIs',operator:'greaterThan',formulae:[1],style:{fill:fs(C.rl),font:fR},priority:12},
-    {type:'cellIs',operator:'greaterThan',formulae:[0.8],style:{fill:fs('FFF3E0'),font:{color:{argb:C.amb},bold:true}},priority:13}
+    {type:'expression',formulae:['AND(ISNUMBER(E22),E22>1)'],style:{fill:fs(C.rl),font:fR},priority:13},
+    {type:'expression',formulae:['AND(ISNUMBER(E22),E22>0.8)'],style:{fill:fs('FFF3E0'),font:{color:{argb:C.amb},bold:true}},priority:14}
   ]});
 
-  // === LEYENDA (Row 28+) ===
-  ws.mergeCells('A28:E28');
-  sc(ws.getCell('A28'),{f:fS,fl:fs(C.td),a:ac}); ws.getCell('A28').value='LEYENDA'; ws.getRow(28).height=24;
-  const legend=[
-    ['🟡 Amarillo claro','Celda editable — disposiciones por empresa'],
-    ['🔵 Azul claro','Celda editable — sublímite de producto / límite global'],
-    ['🟢 Verde claro','Disponible (calculado automáticamente)'],
-    ['🔴 Rojo / "ERROR"','Límite excedido — sublímite o global superado'],
-    ['⚡ Ámbar','Utilización > 80% (alerta preventiva)'],
-    ['✓ OK','Dentro de parámetros'],
-  ];
-  legend.forEach((l,i)=>{
-    const r=29+i;
-    sc(ws.getRow(r).getCell(1),{f:fB,a:al,b:bt}); ws.getRow(r).getCell(1).value=l[0];
-    ws.mergeCells(`B${r}:E${r}`);
-    sc(ws.getRow(r).getCell(2),{f:fN,a:al,b:bt}); ws.getRow(r).getCell(2).value=l[1];
-  });
+
 
   // === DATA VALIDATION ===
   for(let r=fR7;r<=lR;r++){
@@ -239,9 +234,9 @@ async function create() {
     formulae:[0],showErrorMessage:true,errorTitle:'Valor no válido',error:'El límite global debe ser mayor que 0.'};
 
   // === NAMED RANGES ===
-  wb.definedNames.addEx({name:'LimiteGlobal',refFormula:"'Simulador PMM'!$C$3"});
-  wb.definedNames.addEx({name:'TotalDispuesto',refFormula:`'Simulador PMM'!$G$${tR}`});
-  wb.definedNames.addEx({name:'DisponibleGlobal',refFormula:"'Simulador PMM'!$G$3"});
+  wb.definedNames.add("'Simulador PMM'!$C$3",'LimiteGlobal');
+  wb.definedNames.add(`'Simulador PMM'!$G$${tR}`,'TotalDispuesto');
+  wb.definedNames.add("'Simulador PMM'!$G$3",'DisponibleGlobal');
 
   // === PRINT ===
   ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0};
