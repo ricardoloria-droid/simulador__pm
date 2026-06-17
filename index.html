@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador PMM - Grupo Cajamar</title>
+    <style>
+        :root {
+            --primary-dark: #004d4a;
+            --primary-teal: #007d7a;
+            --primary-light: #e6f2f2;
+            --bg-main: #f8fafc;
+            --text-dark: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            font-size: 15px;
+            color: #64748b;
+        }
+
+        .cards {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            padding: 40px 35px;
+            width: 340px;
+            text-decoration: none;
+            color: var(--text-dark);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0,77,74,0.12);
+        }
+
+        .card-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .card-icon.pm {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .card-icon.pmm {
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .card h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .card p {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .card .tag {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            align-self: flex-start;
+        }
+
+        .tag.pm {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .tag.pmm {
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .card .arrow {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary-teal);
+            margin-top: auto;
+        }
+
+        footer {
+            margin-top: 60px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Simulador Póliza Multiproducto</h1>
+        <p>Seleccione el tipo de simulador</p>
+    </header>
+
+    <div class="cards">
+
+        <a href="simulador_pm_multiproducto.html" class="card">
+            <div class="card-icon pm">📋</div>
+            <span class="tag pm">Monoempresa</span>
+            <h2>Simulador PM</h2>
+            <p>Póliza Multiproducto para una sola empresa. Gestione productos y sublímites con visualización de la matriz de contrataciones.</p>
+            <span class="arrow">Abrir simulador →</span>
+        </a>
+
+        <a href="simulador_pmm_multiempresa.html" class="card">
+            <div class="card-icon pmm">🏢</div>
+            <span class="tag pmm">Multiempresa</span>
+            <h2>Simulador PMM</h2>
+            <p>Póliza Multiproducto Multiempresa. Gestione operaciones por empresa con desglose individual y totales consolidados.</p>
+            <span class="arrow">Abrir simulador →</span>
+        </a>
+
+    </div>
+
+    <footer>Grupo Cajamar — Banca Empresas</footer>
+
+</body>
+</html>
