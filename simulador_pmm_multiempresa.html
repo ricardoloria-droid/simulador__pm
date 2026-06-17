@@ -432,7 +432,7 @@
             <div id="kpiAvailable" class="value">0 €</div>
         </div>
         <div class="kpi-card teal">
-            <h3>Dispuesto Consolidado</h3>
+            <h3>Dispuesto</h3>
             <div id="kpiDispensed" class="value">0 €</div>
         </div>
         <div class="kpi-card amber">
@@ -854,6 +854,8 @@
             // KPIs
             document.getElementById("kpiAvailable").innerText = formatEuro(matrix.globalAvailable);
             document.getElementById("kpiDispensed").innerText = formatEuro(matrix.totalGlobal);
+            const globalLimit = parseFloat(document.getElementById("globalLimit").value) || 0;
+            document.getElementById("kpiDispensed").style.color = matrix.totalGlobal > globalLimit ? '#ef4444' : '';
             document.getElementById("kpiCompanies").innerText = companies.length;
             document.getElementById("kpiOperations").innerText = operations.length;
         }

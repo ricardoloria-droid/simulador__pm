@@ -369,7 +369,7 @@
             <div id="kpiAvailable" class="value">0 €</div>
         </div>
         <div class="kpi-card teal">
-            <h3>Dispuesto Consolidado (Aprobado)</h3>
+            <h3>Dispuesto</h3>
             <div id="kpiDispensedApproved" class="value">0 €</div>
         </div>
 
@@ -646,6 +646,8 @@
             // 2. KPIs de cabecera
             document.getElementById("kpiAvailable").innerText = formatEuro(matrix.globalAvailable);
             document.getElementById("kpiDispensedApproved").innerText = formatEuro(matrix.totalDispuestoGlobal);
+            const globalLimit = parseFloat(document.getElementById("globalLimit").value) || 0;
+            document.getElementById("kpiDispensedApproved").style.color = matrix.totalDispuestoGlobal > globalLimit ? '#ef4444' : '';
         }
 
         window.onload = init;
